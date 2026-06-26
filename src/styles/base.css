@@ -1,1 +1,274 @@
+/**
+ * base.css
+ * Styles for every element this extension injects into the Spotify page.
+ * Design direction: a quiet, utilitarian "control deck" aesthetic that sits
+ * comfortably inside Spotify's own dark chrome rather than competing with
+ * it — small pill-shaped controls, a single accent color (signal green,
+ * distinct from Spotify's own brand green so the two are never confused),
+ * and a monospace numeral face for anything measuring time, since the
+ * signature idea of this extension is "you can finally see your own
+ * listening data," and numerals deserve to look like data.
+ */
 
+:root {
+  --se-bg: #16181d;
+  --se-bg-elevated: #1f222a;
+  --se-border: rgba(255, 255, 255, 0.08);
+  --se-text: #f2f3f5;
+  --se-text-muted: #9aa0ac;
+  --se-accent: #5ee3a8;
+  --se-accent-dim: rgba(94, 227, 168, 0.16);
+  --se-radius: 10px;
+  --se-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --se-font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --se-font-mono: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
+  /* Default; overwritten at runtime by now-playing-bar.js to match the
+     bar's actual configured height so the dock never drifts out of place. */
+  --se-bar-height: 90px;
+  --se-dock-height: 56px;
+}
+
+/* Reserve space so Spotify's own scrollable content isn't covered by the
+   dock. Only applied once the dock actually has visible controls in it
+   (see dom-utils.js getDock(), which toggles this class), so users who
+   disable every dock-based feature don't lose space for nothing. */
+body.se-dock-active [data-testid="Root__main-view"] {
+  padding-bottom: var(--se-dock-height) !important;
+}
+
+.se-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--se-text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+}
+.se-icon-btn:hover { background: var(--se-bg-elevated); color: var(--se-text); }
+.se-icon-btn:focus-visible { outline: 2px solid var(--se-accent); outline-offset: 2px; }
+
+/* Custom tooltip — mirrors Spotify's own native tooltip look (dark rounded
+   pill, centered above the element) instead of the generic OS tooltip you
+   get from the browser's title attribute. */
+.se-tooltip {
+  position: fixed;
+  z-index: 9999999;
+  transform: translate(-50%, -100%);
+  background: #0a0a0a;
+  color: #fff;
+  font: 500 12px var(--se-font-ui);
+  padding: 6px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.se-tooltip--visible { opacity: 1; }
+
+/* Extension dock — a single self-contained toolbar that sits just above
+   Spotify's now-playing bar. Every injected control lives here instead of
+   inside Spotify's own flex layout, so we never fight their CSS or break
+   their alignment. Height is fixed and content wraps/scrolls internally
+   rather than pushing the page around. */
+.se-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-height: var(--se-dock-height);
+  box-sizing: border-box;
+  padding: 10px 16px;
+  background: var(--se-bg);
+  border-top: 1px solid var(--se-border);
+  scrollbar-width: thin;
+  pointer-events: auto;
+  /* Sits just above the now-playing bar, with a small gap so the dock's
+     own border doesn't read as touching the bar's controls directly
+     underneath it. */
+  bottom: calc(var(--se-bar-height) + 4px);
+}
+.se-dock::-webkit-scrollbar { height: 4px; }
+.se-dock::-webkit-scrollbar-thumb { background: var(--se-border); border-radius: 2px; }
+.se-dock:empty { display: none; }
+
+/* Toasts */
+#se-toast-host {
+  position: fixed;
+  bottom: calc(var(--se-bar-height) + 54px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+}
+.se-toast {
+  background: var(--se-bg-elevated);
+  color: var(--se-text);
+  border: 1px solid var(--se-border);
+  border-radius: var(--se-radius);
+  padding: 10px 16px;
+  font: 13px var(--se-font-ui);
+  box-shadow: var(--se-shadow);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.se-toast--visible { opacity: 1; transform: translateY(0); }
+
+/* Sleep timer badge */
+.se-sleep-badge {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 999999;
+  background: var(--se-bg-elevated);
+  border: 1px solid var(--se-border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 12px var(--se-font-mono);
+  color: var(--se-text);
+  box-shadow: var(--se-shadow);
+}
+.se-sleep-badge__cancel {
+  background: none;
+  border: none;
+  color: var(--se-text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+.se-sleep-badge__cancel:hover { color: var(--se-text); }
+
+/* Fullscreen view */
+.se-fs {
+  position: fixed; inset: 0; background: #000;
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 999998; gap: 16px;
+}
+.se-fs--visible { display: flex; }
+.se-fs__art {
+  width: min(50vh, 420px); height: min(50vh, 420px);
+  background-size: cover; background-position: center;
+  border-radius: 12px; background-color: var(--se-bg-elevated);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+}
+.se-fs__title { font: 600 22px var(--se-font-ui); color: var(--se-text); }
+.se-fs__artist { font: 15px var(--se-font-ui); color: var(--se-text-muted); }
+.se-fs__controls { display: flex; gap: 24px; margin-top: 8px; }
+.se-fs__controls button {
+  background: none; border: none; color: var(--se-text);
+  font-size: 28px; cursor: pointer;
+}
+.se-fs__exit {
+  position: absolute; top: 24px; right: 24px;
+  background: none; border: none; color: var(--se-text-muted);
+  font-size: 28px; cursor: pointer;
+}
+.se-fs__exit:hover { color: var(--se-text); }
+
+/* Ratings */
+.se-rating { display: flex; align-items: center; flex-shrink: 0; }
+.se-rating__star {
+  background: none; border: none; cursor: pointer;
+  font-size: 15px; color: var(--se-border); padding: 2px;
+}
+.se-rating__star--filled { color: var(--se-accent); }
+
+/* Session timer */
+.se-session {
+  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+  font: 11px var(--se-font-mono); color: var(--se-text-muted);
+}
+.se-session__value { color: var(--se-text); }
+
+/* Copy menu */
+.se-copy-menu {
+  position: fixed; z-index: 999999;
+  background: var(--se-bg-elevated); border: 1px solid var(--se-border);
+  border-radius: 8px; box-shadow: var(--se-shadow); overflow: hidden;
+  display: flex; flex-direction: column; min-width: 180px;
+}
+.se-copy-menu button {
+  background: none; border: none; color: var(--se-text);
+  text-align: left; padding: 8px 12px; font: 12px var(--se-font-ui); cursor: pointer;
+}
+.se-copy-menu button:hover { background: var(--se-accent-dim); color: var(--se-accent); }
+
+/* Context search menu items — injected directly into Spotify's own native
+   right-click menu (see context-search.js), styled to match its existing
+   items so they read as native rather than bolted-on. Spotify's own
+   classes are build-hashed and unstable, so we use plain, predictable
+   styles rather than trying to reuse their exact (and changing) class
+   names — this still sits correctly inside their <ul> because we don't
+   touch layout-critical properties like display/position. */
+.se-ctx-item {
+  list-style: none;
+}
+.se-ctx-item__button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: #fff;
+  text-align: left;
+  padding: 8px 12px;
+  font: 400 14px var(--se-font-ui, -apple-system, sans-serif);
+  cursor: pointer;
+}
+.se-ctx-item__button:hover,
+.se-ctx-item__button:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+}
+.se-ctx-item__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #b3b3b3;
+}
+.se-ctx-item__label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Multi-tab warning */
+.se-multitab-warning {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+  z-index: 999999; background: #3a2e12; color: #ffd58a;
+  border: 1px solid rgba(255,213,138,0.3);
+  border-radius: 999px; padding: 8px 16px; font: 12px var(--se-font-ui);
+  box-shadow: var(--se-shadow);
+}
+
+/* Focus toggle uses .se-icon-btn base; no extra rules needed beyond active state */
+.se-focus-active .se-focus-toggle { color: var(--se-accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .se-toast, .se-fs { transition: none !important; }
+}
