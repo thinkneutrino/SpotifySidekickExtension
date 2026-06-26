@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "Spotify Sidekick - Themes & Tools",
+  "version": "1.0.1",
+  "description": "Adds playback tools, themes, and personal organization to Spotify Web Player. No account, no server, all local.",
+  "permissions": ["storage", "scripting", "downloads", "tabs"],
+  "host_permissions": ["https://open.spotify.com/*"],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Spotify Sidekick",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": ["https://open.spotify.com/*"],
+      "js": [
+        "src/lib/storage.js",
+        "src/lib/dom-utils.js",
+        "src/lib/events.js",
+        "src/features/hotkeys.js",
+        "src/features/sleep-timer.js",
+        "src/features/themes.js",
+        "src/features/focus-mode.js",
+        "src/features/custom-css.js",
+        "src/features/now-playing-bar.js",
+        "src/features/fullscreen-view.js",
+        "src/features/ratings.js",
+        "src/features/play-later.js",
+        "src/features/session-timer.js",
+        "src/features/auto-theme.js",
+        "src/features/idle-detect.js",
+        "src/features/multi-tab-sync.js",
+        "src/features/context-search.js",
+        "src/features/accessibility.js",
+        "src/features/cursor-color.js",
+        "src/features/weekly-recap.js",
+        "src/content.js"
+      ],
+      "css": ["src/styles/base.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spotify Sidekick</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app__header">
+      <div class="app__title">
+        <span class="app__mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+        <span class="app__title-text">
+          <strong>Spotify Sidekick</strong>
+          <small>local-only · no account</small>
+        </span>
+      </div>
+      <nav class="app__tabs" role="tablist">
+        <button class="app__tab app__tab--active" data-tab="library" role="tab">Library</button>
+        <button class="app__tab" data-tab="recap" role="tab">Recap</button>
+        <button class="app__tab" data-tab="playback" role="tab">Playback</button>
+        <button class="app__tab" data-tab="appearance" role="tab">Appearance</button>
+        <button class="app__tab" data-tab="settings" role="tab">More</button>
+      </nav>
+    </header>
+
+    <main class="app__content">
+      <!-- LIBRARY TAB: ratings, play later, session stats -->
+      <section class="app__panel app__panel--active" data-panel="library">
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-card__value" id="stat-today">0m</div>
+            <div class="stat-card__label">listened today</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__value" id="stat-streak">0</div>
+            <div class="stat-card__label">day streak</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section__header">
+            <h2>Play Later</h2>
+            <span class="section__count" id="play-later-count">0</span>
+          </div>
+          <ul class="track-list" id="play-later-list">
+            <li class="empty-state">Nothing queued yet (up to 10). Use the + button in Spotify's now-playing bar.</li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <div class="section__header">
+            <h2>Rated tracks</h2>
+            <span class="section__count" id="ratings-count">0</span>
+          </div>
+          <ul class="track-list" id="ratings-list">
+            <li class="empty-state">Rate tracks with the stars next to the now-playing bar.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- RECAP TAB: weekly listening summary -->
+      <section class="app__panel" data-panel="recap">
+        <div id="recap-locked" class="recap-locked" hidden>
+          <div class="recap-locked__icon">🔒</div>
+          <div class="recap-locked__title">Your first recap is on its way</div>
+          <p class="recap-locked__copy">Recaps cover Monday–Sunday and unlock once a full week has gone by. This week's listening is already being tracked.</p>
+          <div class="recap-locked__timer" id="recap-countdown">—</div>
+          <div class="recap-locked__timer-label">until unlock</div>
+        </div>
+
+        <div id="recap-content" class="recap-content" hidden>
+          <div class="recap-content__header">
+            <span class="recap-content__range" id="recap-range">—</span>
+          </div>
+
+          <div class="stat-row">
+            <div class="stat-card">
+              <div class="stat-card__value" id="recap-total-time">0h</div>
+              <div class="stat-card__label">listened</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__value" id="recap-total-plays">0</div>
+              <div class="stat-card__label">tracks played</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section__header"><h2>Top artists</h2></div>
+            <ol class="recap-rank-list" id="recap-artist-list"></ol>
+          </div>
+
+          <div class="section">
+            <div class="section__header"><h2>Top tracks</h2></div>
+            <ol class="recap-rank-list" id="recap-track-list"></ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- PLAYBACK TAB -->
+      <section class="app__panel" data-panel="playback">
+        <div class="section">
+          <div class="section__header"><h2>Sleep timer</h2></div>
+          <div class="sleep-grid">
+            <button class="btn btn--pill" data-sleep="15">15m</button>
+            <button class="btn btn--pill" data-sleep="30">30m</button>
+            <button class="btn btn--pill" data-sleep="60">60m</button>
+            <button class="btn btn--pill btn--ghost" id="sleep-cancel">Cancel</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section__header"><h2>Feature toggles</h2></div>
+          <div class="toggle-list" id="playback-toggles">
+            <label class="toggle-row"><span>Keyboard shortcuts</span><input type="checkbox" data-setting="hotkeys.enabled"></label>
+            <label class="toggle-row"><span>Sleep timer</span><input type="checkbox" data-setting="sleepTimer.enabled"></label>
+            <label class="toggle-row"><span>Idle auto-pause</span><input type="checkbox" data-setting="idleDetect.enabled"></label>
+            <label class="toggle-row"><span>Multi-tab warning</span><input type="checkbox" data-setting="multiTabSync.enabled"></label>
+          </div>
+        </div>
+
+        <div class="section" id="idle-minutes-section">
+          <div class="section__header"><h2>Idle auto-pause after</h2></div>
+          <input type="range" min="5" max="60" step="5" id="idle-minutes" class="slider">
+          <div class="slider-value" id="idle-minutes-value">20 minutes</div>
+        </div>
+      </section>
+
+      <!-- APPEARANCE TAB -->
+      <section class="app__panel" data-panel="appearance">
+        <div class="section">
+          <div class="section__header"><h2>Theme</h2></div>
+          <div class="theme-grid" id="theme-grid">
+            <button class="theme-swatch" data-theme="default" style="--swatch:#1ed760">Default</button>
+            <button class="theme-swatch" data-theme="midnight" style="--swatch:#6c7bff">Midnight</button>
+            <button class="theme-swatch" data-theme="sunset" style="--swatch:#ff7a59">Sunset</button>
+            <button class="theme-swatch" data-theme="forest" style="--swatch:#3ddc84">Forest</button>
+            <button class="theme-swatch" data-theme="mono" style="--swatch:#ffffff">Mono</button>
+            <button class="theme-swatch" data-theme="custom" style="--swatch:#5ee3a8">Custom</button>
+          </div>
+          <div class="custom-theme-panel" id="custom-theme-panel" hidden>
+            <label class="hex-row">
+              <span>Background</span>
+              <input type="color" id="custom-color-bg" value="#0b0e1a">
+              <input type="text" class="hex-input" id="custom-hex-bg" value="#0b0e1a" maxlength="7">
+            </label>
+            <label class="hex-row">
+              <span>Surface</span>
+              <input type="color" id="custom-color-surface" value="#141a2e">
+              <input type="text" class="hex-input" id="custom-hex-surface" value="#141a2e" maxlength="7">
+            </label>
+            <label class="hex-row">
+              <span>Text</span>
+              <input type="color" id="custom-color-text" value="#e4e8ff">
+              <input type="text" class="hex-input" id="custom-hex-text" value="#e4e8ff" maxlength="7">
+            </label>
+            <label class="hex-row">
+              <span>Muted text</span>
+              <input type="color" id="custom-color-subtext" value="#8890b5">
+              <input type="text" class="hex-input" id="custom-hex-subtext" value="#8890b5" maxlength="7">
+            </label>
+            <label class="hex-row">
+              <span>Accent</span>
+              <input type="color" id="custom-color-accent" value="#6c7bff">
+              <input type="text" class="hex-input" id="custom-hex-accent" value="#6c7bff" maxlength="7">
+            </label>
+            <button class="btn btn--small" id="apply-custom-theme-btn">Apply custom theme</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section__header"><h2>Font</h2></div>
+          <select class="select" id="font-select">
+            <option value="default">Default (Spotify)</option>
+            <option value="system">System UI</option>
+            <option value="serif">Serif</option>
+            <option value="mono">Monospace</option>
+            <option value="rounded">Rounded</option>
+          </select>
+        </div>
+
+        <div class="section">
+          <div class="section__header">
+            <h2>Cursor color</h2>
+            <input type="checkbox" id="cursor-color-toggle">
+          </div>
+          <label class="hex-row" id="cursor-color-row" hidden>
+            <span>Color</span>
+            <input type="color" id="cursor-color-picker" value="#5ee3a8">
+          </label>
+        </div>
+
+        <div class="section">
+          <div class="section__header">
+            <h2>Auto day/night theme</h2>
+            <input type="checkbox" id="auto-theme-toggle">
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section__header"><h2>Focus mode</h2></div>
+          <div class="toggle-list">
+            <label class="toggle-row"><span>Focus mode available</span><input type="checkbox" data-setting="focusMode.enabled"></label>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section__header"><h2>Custom CSS</h2></div>
+          <textarea class="css-editor" id="custom-css" placeholder="/* Your CSS here, applied live */" rows="5"></textarea>
+          <button class="btn btn--small" id="save-css-btn">Save CSS</button>
+        </div>
+      </section>
+
+      <!-- MORE TAB -->
+      <section class="app__panel" data-panel="settings">
+        <div class="section">
+          <div class="section__header"><h2>Hotkey bindings</h2></div>
+          <div class="hotkey-list" id="hotkey-list"></div>
+        </div>
+
+        <div class="section">
+          <div class="section__header"><h2>Accessibility</h2></div>
+          <div class="toggle-list">
+            <label class="toggle-row"><span>High contrast</span><input type="checkbox" data-setting="accessibility.highContrast"></label>
+            <label class="toggle-row"><span>Larger click targets</span><input type="checkbox" data-setting="accessibility.largeTargets"></label>
+            <label class="toggle-row"><span>Reduce motion</span><input type="checkbox" data-setting="accessibility.reducedMotion"></label>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section__header"><h2>Right-click search</h2></div>
+          <div class="toggle-list">
+            <label class="toggle-row"><span>Genius</span><input type="checkbox" data-service="genius"></label>
+            <label class="toggle-row"><span>YouTube</span><input type="checkbox" data-service="youtube"></label>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section__header"><h2>Data</h2></div>
+          <p class="hint">Everything is stored locally in your browser. Nothing is sent anywhere.</p>
+          <button class="btn btn--ghost btn--small" id="export-data-btn">Export my data (JSON)</button>
+          <button class="btn btn--ghost btn--small btn--danger" id="reset-data-btn">Reset all data</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="src/lib/storage.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

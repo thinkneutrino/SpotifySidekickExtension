@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spotify Sidekick — Settings</title>
+  <link rel="stylesheet" href="popup.css" />
+  <style>
+    body { width: auto; max-height: none; margin: 0 auto; max-width: 640px; padding: 32px 24px; }
+    .app__content { max-height: none; padding: 0; }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    .subtitle { color: var(--text-muted); font-size: 12px; margin: 0 0 24px; }
+    .rebind-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .rebind-btn { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 12px; font: 11px var(--font-mono); cursor: pointer; min-width: 80px; }
+    .rebind-btn--listening { border-color: var(--accent); color: var(--accent); }
+  </style>
+</head>
+<body>
+  <h1>Spotify Sidekick</h1>
+  <p class="subtitle">All settings are also available from the toolbar popup. This page is best for rebinding hotkeys and editing custom CSS in a larger space.</p>
+
+  <div class="section">
+    <div class="section__header"><h2>Keyboard shortcuts</h2></div>
+    <div id="rebind-list"></div>
+  </div>
+
+  <div class="section">
+    <div class="section__header"><h2>Custom CSS</h2></div>
+    <textarea class="css-editor" id="custom-css-full" rows="14" placeholder="/* Write any CSS here. It applies live on open.spotify.com */"></textarea>
+    <button class="btn btn--small" id="save-css-full-btn">Save CSS</button>
+  </div>
+
+  <script src="src/lib/storage.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
